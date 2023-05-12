@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+read -r song <<<"$(curl "$1" |
+	perl -l -0777 -ne 'print $1 if /<title.*?>\s*(.*?)(?: - youtube)?\s*<\/title/si')"
+
+artist="$2"
+title="$3"
+[ -z "$artist" ] && artist=${song%?[-–]*}
+[ -z "$title" ] && title=${song#*[-–]?} && title="${title/?\(*\)/}"
+
+yt-dlp -x --restrict-filenames -q --progress -P "$HOME/music/" --exec \
+	"ffmpeg -metadata artist=\"$artist\" -metadata title=\"$title\" \"$title\".opus -i " \
+	"$1" --exec "rm -f "
